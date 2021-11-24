@@ -2,14 +2,12 @@ const { createUserAndRole, getUserByEmail } = require('../services/users');
 
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
-const {
-  getUsers, getUserById, createUser, putUser, deleteUser,
-} = require('../controller/users');
+const { getUsers, getUserById, createUser, putUser, deleteUser } = require('../controller/users');
 
 const initAdminUser = async (app, next) => {
   const { adminEmail, adminPassword } = app.get('config');
   if (!adminEmail || !adminPassword) return next();
-  // TODO: crear usuaria admin
+
   const userFound = await getUserByEmail(adminEmail);
   if (!userFound) {
     await createUserAndRole(adminEmail, adminPassword, { admin: true });

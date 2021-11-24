@@ -11,7 +11,7 @@ module.exports = (secret) => (req, resp, next) => {
 
   jwt.verify(token, secret, (err, decodedToken) => {
     if (err) return next(403);
-    // TODO: Verificar identidad del usuario usando `decodeToken.uid`
+
     getUserByIdOrEmail(decodedToken.id)
       .then((userFound) => {
         if (!userFound) return resp.status(400).json({ message: 'user not found' });
@@ -21,21 +21,18 @@ module.exports = (secret) => (req, resp, next) => {
       .catch(() => next(403));
   });
 };
-// TODO: decidir por la informacion del request si la usuaria esta autenticada
-module.exports.isAuthenticated = (req) => (!!(req.userToken));
+
+module.exports.isAuthenticated = (req) => !!req.userToken;
 
 module.exports.isAdmin = async (req) => {
-  // TODO: decidir por la informacion del request si la usuaria es admin
   const user = await getUserByIdOrEmail(req.userToken.id);
   return user.roles.admin;
 };
 
-module.exports.requireAuth = (req, resp, next) => (!module.exports.isAuthenticated(req)
-  ? next(401)
-  : next());
+module.exports.requireAuth = (req, resp, next) => (!module.exports.isAuthenticated(req) ? next(401) : next());
 
 module.exports.requireAdmin = async (req, resp, next) => {
   if (!module.exports.isAuthenticated(req)) return next(401);
-  if (!await module.exports.isAdmin(req)) return next(403);
+  if (!(await module.exports.isAdmin(req))) return next(403);
   return next();
 };
